@@ -14,5 +14,7 @@ for i in `seq 0 $[n-1]`; do
     openssl req -newkey rsa -nodes -x509 -out $ssl_dir/P$i.pem -keyout $ssl_dir/P$i.key -subj "/CN=P$i"
 done
 
-rm -v $ssl_dir/*.0
-c_rehash -v $ssl_dir
+# 使用 -f 忽略文件不存在的错误
+rm -f $ssl_dir/*.0
+# 使用 openssl rehash 替代坏掉的 c_rehash 脚本
+openssl rehash -v $ssl_dir

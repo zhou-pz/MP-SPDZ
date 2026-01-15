@@ -60,17 +60,32 @@ def radix_sort_from_matrix(bs, D):
     for b in bs:
         assert(len(b) == n)
     B = types.sint.Matrix(n, 2)
-    h = types.Array.create_from(types.sint(types.regint.inc(n)))
+    sigma = types.sint.Matrix(2, n)
     @library.for_range(len(bs))
     def _(i):
         b = bs[i]
         B.set_column(0, 1 - b.get_vector())
         B.set_column(1, b.get_vector())
-        c = types.Array.create_from(dest_comp(B))
-        reveal_sort(c, h, reverse=False)
-        @library.if_e(i < len(bs) - 1)
+        rho = types.Array.create_from(dest_comp(B))
+        @library.if_e(i == 0)
         def _():
-            reveal_sort(h, bs[i + 1], reverse=True)
+            sigma[0] = rho
+            @library.if_e(i < len(bs) - 1)
+            def _():
+                reveal_sort(rho, bs[i + 1], reverse=False)
+            @library.else_
+            def _():
+                reveal_sort(rho, D, reverse=False)            
         @library.else_
         def _():
-            reveal_sort(h, D, reverse=True)
+            sigma[1] = rho
+            temp = sigma[1]
+            reveal_sort(sigma[0], temp, reverse=True)
+            sigma[1] = temp
+            @library.if_e(i < len(bs) - 1)
+            def _():
+                reveal_sort(sigma[1], bs[i + 1], reverse=False)
+            @library.else_
+            def _():
+                reveal_sort(sigma[1], D, reverse=False)
+            sigma[0] = sigma[1]
